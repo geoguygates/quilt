@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "quilt"
+version = "0.1.0"
+description = "fill this out later"
+authors = ["David J Gates"]
+license = "NA"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = '^3.11.4'
+requests = "^2.26.0"
+pandas = "^2.0.3"
+urllib3 = "^2.0.3"
+pyarrow = "^12.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
