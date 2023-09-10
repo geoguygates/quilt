@@ -1,11 +1,16 @@
+from utils import load_config
 from weather import WeatherClient
-from writer import Writer
+from quilt import render_quilt
+
+
 
 def main():
-    client = WeatherClient()
-    df = client.get_historical_weather_data(city="austin", state='texas', start_date="1997-01-01", end_date="1997-01-01")
-    writer = Writer(r"C:\Users\David Gate\Documents\repos\quilt\data", "January 1997")
-    writer.persist_to_parquet(df)
+    config = load_config("src/config.yml")
+    weatherclient = WeatherClient()
+
+    historical_weather_data_df = weatherclient.get_historical_weather_data(city="austin", state="texas", year="1997")
+    
+    render_quilt(historical_weather_data_df)
 
 
 if __name__ == "__main__":
