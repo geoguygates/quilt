@@ -1,1 +1,5 @@
-weather_data_write_path: C:/Users/David Gate/Documents/repos/quilt/data"
+weather_data_write_path: "C:/Users/David Gate/Documents/repos/quilt/data"
+state: "texas"
+city: "houston"
+year: "1995"
+bins: 10
