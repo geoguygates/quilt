@@ -3,3 +3,4 @@ data_lake/
 .vscode/
 quilt-venv/
 *.pyc
+data/
