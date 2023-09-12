@@ -1,19 +1,22 @@
 import requests
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Dict
 from urllib.parse import urlencode, urlunparse
 import os
 import pandas as pd
 from requests.exceptions import RequestException
-from typing import Dict
+from utils import Writer
 
 
 class WeatherClient:
     """A client to interact with the free Visual Crossing Weather API."""
-    def __init__(self):
-        self.api_key: str = os.environ["VISUAL_CROSSING_API_KEY"]
+    def __init__(self, config):
+        self.config = config
+        self.api_key: str = os.environ.get("VISUAL_CROSSING_API_KEY")
+        if not self.api_key:
+            raise EnvironmentError("VISUAL_CROSSING_API_KEY environment variable not set")
+        
 
-
-    def get_historical_weather_data(self, city: str, state: str, year: str, chunk_size: Optional[int] = 10, units: str="us", include: str="days", return_file_type: str="json") -> Union[pd.DataFrame, None]:
+    def get_historical_weather_data(self, chunk_size: Optional[int]=10, units: str="us", include: str="days", return_file_type: str="json") -> Union[pd.DataFrame, None]:
         """
         Get historical weather data for the specified location and date range. If data exists already on disk use it.
 
@@ -33,7 +36,7 @@ class WeatherClient:
         requests.exceptions.RequestException: If the request to the API is not a 200 code
         """
         
-        date_list = self.__generate_date_list(year, chunk_size)
+        date_list = self.__generate_date_list(chunk_size)
         date_ranges = self.__generate_date_ranges(date_list)
         
         dfs = []
@@ -50,7 +53,7 @@ class WeatherClient:
             start_date, end_date = date_range
 
             
-            path = f"/VisualCrossingWebServices/rest/services/timeline/{city}%20{state}/{start_date}/{end_date}"
+            path = f"/VisualCrossingWebServices/rest/services/timeline/{self.config['city']}%20{self.config['state']}/{start_date}/{end_date}"
             
             url_components = (scheme, netloc, path, None, urlencode(query_params), None)
             url = urlunparse(url_components)
@@ -64,18 +67,19 @@ class WeatherClient:
                 dfs.append(df)
 
         if dfs:
-            return pd.concat(dfs, ignore_index=True)
-        else:
+            df = pd.concat(dfs, ignore_index=True)
+            Writer(self.config).write_to_csv(df)
+
             return None
     
 
-    def __generate_date_list(self, year: str, chunk_size: int) -> list[str]:
+    def __generate_date_list(self, chunk_size: int) -> list[str]:
         """It is possible that the `end_date` might not be included in the generated date_list due to the fixed frequency interval.
         Therefore, we explicitly check if the `end_date` is in the `date_list`. If not, we append it to ensure that the range 
         accurately represents the entire span from the `start_date` to the `end_date`, inclusive of both endpoints."""
         
-        start_date = f"{year}-01-01"
-        end_date = f"{year}-12-31"
+        start_date = f"{self.config['year']}-01-01"
+        end_date = f"{self.config['year']}-12-31"
         date_list = pd.date_range(start=start_date, end=end_date, freq=f"{chunk_size}D").strftime('%Y-%m-%d').tolist()
         if end_date not in date_list:
             date_list.append(end_date)
