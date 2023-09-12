@@ -1,16 +1,18 @@
 from utils import load_config
 from weather import WeatherClient
-from quilt import render_quilt
+from quilt import draw_quilt
 
 
 
 def main():
-    config = load_config("src/config.yml")
-    weatherclient = WeatherClient()
+    try:
+        config = load_config("src/config.yml")
+    except FileNotFoundError as e:
+        print(f"Error loading configuration: {e}")
 
-    historical_weather_data_df = weatherclient.get_historical_weather_data(city="austin", state="texas", year="1997")
-    
-    render_quilt(historical_weather_data_df)
+    # WeatherClient(config).get_historical_weather_data()
+
+    draw_quilt(config)
 
 
 if __name__ == "__main__":
