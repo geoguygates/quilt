@@ -10,10 +10,9 @@ def main():
     except FileNotFoundError as e:
         print(f"Error loading configuration: {e}")
 
-    # WeatherClient(config).get_historical_weather_data()
+    df = WeatherClient(config).get_weather_data()
 
-    draw_quilt(config)
-
+    draw_quilt(config, df)
 
 if __name__ == "__main__":
     main()
