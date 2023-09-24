@@ -5,10 +5,42 @@ import os
 import pandas as pd
 from datetime import datetime
 from requests.exceptions import RequestException
-# from utils import write_to_csv
+from abc import ABC, abstractmethod
+from dotenv import load_dotenv
+load_dotenv()
 
 
-class WeatherClient:
+
+def factory_weather_client(config):
+    if os.environ.get("WEATHER_CLIENT") == "MOCK":
+        return MockWeatherClient(config)
+    else:
+        return WeatherClient(config)
+
+
+class BaseWeatherClient(ABC):
+
+    @abstractmethod
+    def get_weather_data(self):
+        """Fetch weather data."""
+        pass
+
+
+class MockWeatherClient(BaseWeatherClient):
+    
+    def __init__(self, config):
+        self.config = config
+
+
+    def get_weather_data(self):
+        # Mock implementation for testing or local development
+        file_path = os.path.join("data", "alabama", "birmingham", "1995", "316417a4-9ffc-4b84-a0a4-76c4f5cac8e8.csv")
+        print(file_path)
+        df = pd.read_csv(file_path)
+        return df
+
+
+class WeatherClient(BaseWeatherClient):
     """A client to interact with the Visual Crossing Weather API."""
     def __init__(self, config):
         self.config = config
