@@ -1,13 +1,16 @@
+import os
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
+from weather import factory_weather_client
+from quilt import draw_quilt
 
-import main
 
-app = dash.Dash(__name__)
+
+dash_app = dash.Dash(__name__)
 
 # Step 3: Define your Dash app and layout
-app.layout = html.Div([
+dash_app.layout = html.Div([
     # Create input fields for the user to configure inputs (replace with your actual input fields)
     dcc.Input(id='input-city', type='text', placeholder='Enter city'),
     dcc.Input(id='input-state', type='text', placeholder='Enter state'),
@@ -22,8 +25,7 @@ app.layout = html.Div([
 ])
 
 # Step 4: Create a callback function
-@app.callback(
-    Output('plot-output', 'src'),
+@dash_app.callback(Output('plot-output', 'src'),
     [Input('generate-button', 'n_clicks')],
     [
         dash.dependencies.State('input-city', 'value'),
@@ -32,21 +34,30 @@ app.layout = html.Div([
         dash.dependencies.State('input-colors', 'value')
     ]
 )
-def generate_plot(n_clicks, city, state, start_date, colors):
-    if n_clicks is None:
+def generate_plot(n_clicks, city, state, start_date, num_colors):
+    if not all([city, state, start_date, num_colors, n_clicks]):
         return dash.no_update
 
-    # Call your existing script function (replace with your actual function name and arguments)
-    config = {'city': city, 'state': state, 'start_date': start_date, 'colors': colors}
-    df = # ... (get your data frame here, either within your_script or here)
-    
-    main.main(config, df)  # Assuming draw_quilt is the function that draws the plot
+    config = {'city': city, 'state': state, 'start_date': start_date, 'num_colors': num_colors}
+    print(f"Config: {config}")  # Check the configuration dictionary
 
-    # Path to the saved plot (update with your actual path)
-    plot_path = 'plot.png'  # Assuming your draw_quilt function saves the plot as 'plot.png'
+    try:
+        weather_client = factory_weather_client(config)
+        df = weather_client.get_weather_data()
+        print(f"DataFrame shape: {df.shape}")  # Check the shape of the DataFrame
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-    return f'/{plot_path}' 
+    try:
+        src = draw_quilt(config, df)
+        print(f"Source length: {len(src)}")  # Check the length of the source string
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    return src
+
 
 # Run the Dash app
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    dash_app.run_server(debug=True)
