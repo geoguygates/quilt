@@ -8,7 +8,7 @@
 
 ### Bugs:
 - [ ] Why is df 366 len instead of 365? Need to trim this properly or have some kind of assert
-- [ ] Why can num_colors be neagtive in the UI?
+- [ ] Why can num_colors be negative in the UI?
 - [ ] Move the legend somewhere that makes sense.
 
 ### Auxiliary
